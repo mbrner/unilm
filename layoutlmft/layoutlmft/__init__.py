@@ -4,7 +4,6 @@ from packaging import version
 from transformers import CONFIG_MAPPING, MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING, MODEL_NAMES_MAPPING, TOKENIZER_MAPPING
 import transformers
 from transformers.convert_slow_tokenizer import SLOW_TO_FAST_CONVERTERS, BertConverter, XLMRobertaConverter
-from transformers.models.auto.modeling_auto import auto_class_update, _BaseAutoModelClass
 
 from .models.layoutlmv2 import (
     LayoutLMv2Config,
