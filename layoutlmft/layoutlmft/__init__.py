@@ -1,8 +1,10 @@
 from collections import OrderedDict
+from packaging import version
 
 from transformers import CONFIG_MAPPING, MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING, MODEL_NAMES_MAPPING, TOKENIZER_MAPPING
+import transformers
 from transformers.convert_slow_tokenizer import SLOW_TO_FAST_CONVERTERS, BertConverter, XLMRobertaConverter
-from transformers.models.auto.modeling_auto import auto_class_factory
+from transformers.models.auto.modeling_auto import auto_class_update, _BaseAutoModelClass
 
 from .models.layoutlmv2 import (
     LayoutLMv2Config,
@@ -37,10 +39,23 @@ MODEL_FOR_RELATION_EXTRACTION_MAPPING = OrderedDict(
     [(LayoutLMv2Config, LayoutLMv2ForRelationExtraction), (LayoutXLMConfig, LayoutXLMForRelationExtraction)]
 )
 
-AutoModelForTokenClassification = auto_class_factory(
-    "AutoModelForTokenClassification", MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING, head_doc="token classification"
-)
 
-AutoModelForRelationExtraction = auto_class_factory(
-    "AutoModelForRelationExtraction", MODEL_FOR_RELATION_EXTRACTION_MAPPING, head_doc="relation extraction"
-)
+if version.parse(transformers.__version__) < version.parse("4.9.0"):
+    from transformers.models.auto.modeling_auto import auto_class_factory
+    AutoModelForTokenClassification = auto_class_factory(
+        "AutoModelForTokenClassification", MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING, head_doc="token classification"
+    )
+
+    AutoModelForRelationExtraction = auto_class_factory(
+        "AutoModelForRelationExtraction", MODEL_FOR_RELATION_EXTRACTION_MAPPING, head_doc="relation extraction"
+    )
+else:
+    from transformers.models.auto.modeling_auto import auto_class_update, _BaseAutoModelClass
+    class AutoModelForTokenClassification(_BaseAutoModelClass):
+        _model_mapping = MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING
+    AutoModelForTokenClassification = auto_class_update(AutoModelForTokenClassification, head_doc="token classification")
+
+
+    class AutoModelForRelationExtraction(_BaseAutoModelClass):
+        _model_mapping = MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING
+    AutoModelForRelationExtraction = auto_class_update(AutoModelForRelationExtraction, head_doc="relation extraction")
